@@ -1,3 +1,4 @@
+// CONSTANTES
 const kantoLinks = {
     "Bourg Palette": "https://master-poke.forumactif.fr/f93-bourg-palette",
     "Routes 1 & 2": "https://master-poke.forumactif.fr/f105-routes-1-2",
@@ -471,54 +472,63 @@ const noModerationString = [
     "[p2b]",
     "concours de coordination n°",
 ];
-const noModerationStringInfo = [
+const noModerationStringInfo = noModerationString.concat([
     "non modéré",
     "non modere",
     "non-modéré",
     "non-modere",
-];
+]);
 const baseUrl = "https://master-poke.forumactif.fr/"
 
+const kantoBtn = document.getElementById('kantoBtn');
+const johtoBtn = document.getElementById('johtoBtn');
+const hoennBtn = document.getElementById('hoennBtn');
+const sinnohBtn = document.getElementById('sinnohBtn');
+const unysBtn = document.getElementById('unysBtn');
+const kalosBtn = document.getElementById('kalosBtn');
+const alolaBtn = document.getElementById('alolaBtn');
+const galarBtn = document.getElementById('galarBtn');
+const paldeaBtn = document.getElementById('paldeaBtn');
+const mtBtn = document.getElementById('mtBtn');
+const almiaBtn = document.getElementById('almiaBtn');
+const hqBtn = document.getElementById('hqBtn');
+
+// PROGRAMME
 async function scrapeData(url, placeName) {
     const data = [];
 
     try {
-        const response = await fetch(url);
+        const response = await fetch(url, {
+            headers: {
+                "Host": "master-poke.forumactif.fr",
+            }
+        });
         const html = await response.text();
         const parser = new DOMParser();
         const doc = parser.parseFromString(html, "text/html");
-        const rows = doc.querySelectorAll('tr:has(div.topictitle)');
+        const rows = doc.querySelectorAll('table.forumline tr:has(div.topictitle)');
 
         rows.forEach(function(row) {
             const principalTd = row.querySelector('div.topictitle')
             const topicName = principalTd.querySelector('a.topictitle').innerText
             const creatorName = principalTd.querySelector('span.name span')?.innerText
 
-            if (creatorName === undefined || (pnjNames.includes(creatorName) && !topicName.toLowerCase().includes("centre commercial")))
-                return
-
             let infoCompl = row.querySelector('span.genmed')?.innerText
             infoCompl = infoCompl === undefined ? "" : infoCompl;
 
-            if (
-                noModerationString.some(item => infoCompl.toLowerCase().includes(item)) ||
-                noModerationString.some(item => topicName.toLowerCase().includes(item)) ||
-                noModerationStringInfo.some(item => infoCompl.toLowerCase().includes(item))
-            )
-                return
-
             const lastResponseTd = row.querySelector('span.list_topics')
             const lastResponseName = lastResponseTd.querySelector('strong')?.innerText
-
-            if (pnjNames.includes(lastResponseName) || lastResponseName === undefined)
-                return
 
             const lastResponseDate = lastResponseTd.firstChild.nodeValue.trim()
             let lastResponseLink = lastResponseTd.querySelector('a').getAttribute('href')
             lastResponseLink = `<a href="${baseUrl}${lastResponseLink}" target="_blank">Dernier message</a>`
 
+            if (!shouldAppear(creatorName, topicName, infoCompl, lastResponseName, lastResponseDate))
+                return
+
             const newData = [topicName, creatorName, lastResponseName, infoCompl, lastResponseDate, lastResponseLink]
-            if (!data.some(list => JSON.stringify(list) === JSON.stringify(newData)))
+            const newDataNoInfo = [topicName, creatorName, lastResponseName, lastResponseDate, lastResponseLink]
+            if (!data.some(list => JSON.stringify(list) === JSON.stringify(newDataNoInfo)))
                 data.push(newData)
         });
 
@@ -543,17 +553,19 @@ async function scrapeData(url, placeName) {
             });
         }
     } catch (error) {
-        console.log(error);
+        console.error(error);
     }
 }
 
-async function changeRegion(dictLinks) {
+async function changeRegion(dictLinks, button) {
     let tableBody = document.querySelector('tbody');
     while (tableBody.firstChild) {
         tableBody.removeChild(tableBody.firstChild);
     }
 
+    document.querySelectorAll('button').forEach(bouton => bouton.classList.remove('btn-success'));
     document.querySelectorAll('button').forEach(bouton => bouton.disabled = true);
+    button.classList.add('btn-success');
 
     for (let key in dictLinks) {
         await scrapeData(dictLinks[key], key);
@@ -561,3 +573,288 @@ async function changeRegion(dictLinks) {
 
     document.querySelectorAll('button').forEach(bouton => bouton.disabled = false);
 }
+
+// EVENT LISTENER
+kantoBtn.addEventListener('click', function() { changeRegion(kantoLinks, kantoBtn); });
+johtoBtn.addEventListener('click', function() { changeRegion(johtoLinks, johtoBtn); });
+hoennBtn.addEventListener('click', function() { changeRegion(hoennLinks, hoennBtn); });
+sinnohBtn.addEventListener('click', function() { changeRegion(sinnohLinks, sinnohBtn); });
+unysBtn.addEventListener('click', function() { changeRegion(unysLinks, unysBtn); });
+kalosBtn.addEventListener('click', function() { changeRegion(kalosLinks, kalosBtn); });
+alolaBtn.addEventListener('click', function() { changeRegion(alolaLinks, alolaBtn); });
+galarBtn.addEventListener('click', function() { changeRegion(galarLinks, galarBtn); });
+paldeaBtn.addEventListener('click', function() { changeRegion(paldeaLinks, paldeaBtn); });
+mtBtn.addEventListener('click', function() { changeRegion(mtLinks, mtBtn); });
+almiaBtn.addEventListener('click', function() { changeRegion(almiaLinks, almiaBtn); });
+hqBtn.addEventListener('click', function() { changeRegion(hqLinks, hqBtn); });
+
+
+// UTILS
+function shouldAppear(creatorName, topicName, infoCompl, lastResponseName, lastResponseDate) {
+    // Test sur le nom du créateur et le nom du topic pour les centres commerciaux
+    if (creatorName === undefined || (pnjNames.includes(creatorName) && !topicName.toLowerCase().includes("centre commercial")))
+        return false;
+
+    // Test si 'non modéré' dans le nom du topic ou le sous-titre
+    if (
+        noModerationString.some(item => topicName.toLowerCase().includes(item)) ||
+        noModerationStringInfo.some(item => infoCompl.toLowerCase().includes(item))
+    )
+        return false;
+
+    // Test sur la dernière réponse
+    if (pnjNames.includes(lastResponseName) || lastResponseName === undefined)
+        return false;
+
+    // Test sur la date
+    const date = convertDate(lastResponseDate)
+    const dateCompare = new Date();
+    dateCompare.setMonth(dateCompare.getMonth() - 1);
+    if (date < dateCompare)
+        return false;
+
+    // Return final
+    return true;
+}
+
+function convertDate(dateStr) {
+    if (dateStr.includes("Hier")) {
+        return convertYesterday(dateStr);
+    }
+
+    if (dateStr.includes("Aujourd'hui")) {
+        return convertToday(dateStr);
+    }
+
+    const moisEnFr = ["Jan", "Fév", "Mar", "Avr", "Mai", "Juin", "Juil", "Aoû", "Sep", "Oct", "Nov", "Déc"];
+    const date = new Date();
+    let [day, month, year] = dateStr.split(" ").slice(1);
+    let [hours, minutes] = dateStr.split("-")[1].trim().split(':').slice();
+
+    month = moisEnFr.indexOf(month);
+    if (year === '-')
+        year = date.getFullYear();
+
+    date.setDate(day);
+    date.setMonth(month);
+    date.setFullYear(year);
+    date.setHours(Number(hours), Number(minutes), 0, 0);
+
+    return date;
+}
+
+function convertYesterday(dateStr) {
+    let date = new Date();
+    date.setDate(date.getDate() - 1);
+
+    let time = dateStr.split(" à ")[1];
+    let [hours, minutes] = time.split(":");
+
+    date.setHours(hours, minutes, 0, 0);
+    return date;
+}
+
+function convertToday(dateStr) {
+    let today = new Date();
+    let time = dateStr.split(" à ")[1];
+    let [hours, minutes] = time.split(":");
+
+    today.setHours(hours, minutes, 0, 0);
+    return today;
+}
+
+// TESTS
+function assertEquals(expected, actual, testName) {
+    if (expected === actual) {
+        console.info(`${testName} réussi !`);
+    } else {
+        console.error(`${testName} échoué. Attendu : ${expected}, obtenu : ${actual}`);
+    }
+}
+
+function assertEqualsDate(expected, actual, testName) {
+    if (expected.getTime() === actual.getTime()) {
+        console.info(`${testName} réussi !`);
+    } else {
+        console.error(`${testName} échoué. Attendu : ${expected}, obtenu : ${actual}, différence : ${expected - actual}`);
+    }
+}
+
+function testCreatorName() {
+    console.info('-- TEST CREATOR NAME --')
+    let creatorName = "Mister MP"
+    let topicName = "centre commercial"
+    const infoCompl= "rien"
+    const lastResponseName = "Titi"
+    const lastResponseDate = "Hier à 9:46"
+
+    assertEquals(true, shouldAppear(creatorName, topicName, infoCompl, lastResponseName, lastResponseDate), "Test 1");
+
+    creatorName = "Mister J"
+    topicName = "Centre commercial"
+    assertEquals(true, shouldAppear(creatorName, topicName, infoCompl, lastResponseName, lastResponseDate), "Test 2");
+
+    creatorName = "Mister K"
+    topicName = "Centre Commercial"
+    assertEquals(true, shouldAppear(creatorName, topicName, infoCompl, lastResponseName, lastResponseDate), "Test 3");
+
+    creatorName = "Mister L"
+    assertEquals(true, shouldAppear(creatorName, topicName, infoCompl, lastResponseName, lastResponseDate), "Test 4");
+
+    creatorName = "Mister L"
+    topicName = "Pokémon sauvage"
+    assertEquals(false, shouldAppear(creatorName, topicName, infoCompl, lastResponseName, lastResponseDate), "Test 5");
+
+    creatorName = "Titi"
+    topicName = "A l'attaque"
+    assertEquals(true, shouldAppear(creatorName, topicName, infoCompl, lastResponseName, lastResponseDate), "Test 6");
+}
+
+function testTopicName() {
+    console.info('-- TEST TOPIC NAME --')
+    const creatorName = "Titi"
+    let topicName = "A l'attaque"
+    let infoCompl= ""
+    const lastResponseName = "Titi"
+    const lastResponseDate = "Hier à 9:46"
+
+    assertEquals(true, shouldAppear(creatorName, topicName, infoCompl, lastResponseName, lastResponseDate), "Test 1");
+
+    topicName = "[Non Modéré] A l'attaque"
+    assertEquals(false, shouldAppear(creatorName, topicName, infoCompl, lastResponseName, lastResponseDate), "Test 2");
+
+    topicName = "[Modéré] A l'attaque"
+    assertEquals(true, shouldAppear(creatorName, topicName, infoCompl, lastResponseName, lastResponseDate), "Test 3");
+
+    topicName = "Attaque non modéré"
+    assertEquals(true, shouldAppear(creatorName, topicName, infoCompl, lastResponseName, lastResponseDate), "Test 4");
+
+    infoCompl = "Non-modéré"
+    assertEquals(false, shouldAppear(creatorName, topicName, infoCompl, lastResponseName, lastResponseDate), "Test 5");
+
+    infoCompl = "modéré"
+    assertEquals(true, shouldAppear(creatorName, topicName, infoCompl, lastResponseName, lastResponseDate), "Test 6");
+
+    topicName = "[P2B] A l'attaque"
+    infoCompl= null
+    assertEquals(false, shouldAppear(creatorName, topicName, infoCompl, lastResponseName, lastResponseDate), "Test 7");
+
+    topicName = "Concours de coordination n°45"
+    assertEquals(false, shouldAppear(creatorName, topicName, infoCompl, lastResponseName, lastResponseDate), "Test 8");
+
+    topicName = "A l'attaque"
+    infoCompl = "[NON MODERE]"
+    assertEquals(false, shouldAppear(creatorName, topicName, infoCompl, lastResponseName, lastResponseDate), "Test 9");
+
+    topicName = "[Modéré] A l'attaque"
+    infoCompl = "[NON-MODERE]"
+    assertEquals(false, shouldAppear(creatorName, topicName, infoCompl, lastResponseName, lastResponseDate), "Test 10");
+
+    topicName = "A l'attaque"
+    infoCompl = "[p2b]"
+    assertEquals(false, shouldAppear(creatorName, topicName, infoCompl, lastResponseName, lastResponseDate), "Test 11");
+}
+
+function testLastResponseName() {
+    console.info('-- TEST LAST RESPONSE NAME --')
+    const creatorName = "Titi"
+    const topicName = "A l'attaque"
+    const infoCompl= ""
+    let lastResponseName = "Titi"
+    const lastResponseDate = "Hier à 9:46"
+
+    assertEquals(true, shouldAppear(creatorName, topicName, infoCompl, lastResponseName, lastResponseDate), "Test 1");
+
+    lastResponseName = "Mister MP"
+    assertEquals(false, shouldAppear(creatorName, topicName, infoCompl, lastResponseName, lastResponseDate), "Test 2");
+
+    lastResponseName = "Mister K"
+    assertEquals(false, shouldAppear(creatorName, topicName, infoCompl, lastResponseName, lastResponseDate), "Test 3");
+
+    lastResponseName = "Mister J"
+    assertEquals(false, shouldAppear(creatorName, topicName, infoCompl, lastResponseName, lastResponseDate), "Test 4");
+
+    lastResponseName = "Mister L"
+    assertEquals(false, shouldAppear(creatorName, topicName, infoCompl, lastResponseName, lastResponseDate), "Test 5");
+
+    lastResponseName = "Miss E"
+    assertEquals(false, shouldAppear(creatorName, topicName, infoCompl, lastResponseName, lastResponseDate), "Test 6");
+}
+
+function testDateResponseName() {
+    console.info('-- TEST DATE RESPONSE NAME --')
+    const creatorName = "Titi"
+    const topicName = "A l'attaque"
+    const infoCompl= ""
+    const lastResponseName = "Titi"
+    let lastResponseDate = "Aujourd'hui à 9:46"
+
+    assertEquals(true, shouldAppear(creatorName, topicName, infoCompl, lastResponseName, lastResponseDate), "Test 1");
+
+    lastResponseDate = "Hier à 00:15"
+    assertEquals(true, shouldAppear(creatorName, topicName, infoCompl, lastResponseName, lastResponseDate), "Test 2");
+
+    let date = new Date();
+    date.setDate(date.getDate() - 20)
+    let optionsDate = { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' };
+    let optionsHour = { hour: '2-digit', minute: '2-digit', hour12: false };
+    let dateFormated = date.toLocaleDateString('fr-FR', optionsDate);
+    let heureFormated = date.toLocaleTimeString('fr-FR', optionsHour);
+    lastResponseDate = `${dateFormated.replaceAll('.', '')} - ${heureFormated}`;
+    assertEquals(true, shouldAppear(creatorName, topicName, infoCompl, lastResponseName, lastResponseDate), "Test 3");
+
+    date = new Date();
+    date.setDate(date.getDate() - 30)
+    dateFormated = date.toLocaleDateString('fr-FR', optionsDate);
+    heureFormated = date.toLocaleTimeString('fr-FR', optionsHour);
+    lastResponseDate = `${dateFormated.replaceAll('.', '')} - ${heureFormated}`;
+    assertEquals(true, shouldAppear(creatorName, topicName, infoCompl, lastResponseName, lastResponseDate), "Test 4");
+
+    lastResponseDate = "Ven 1 Nov 2024 - 16:52"
+    assertEquals(false, shouldAppear(creatorName, topicName, infoCompl, lastResponseName, lastResponseDate), "Test 5");
+
+    lastResponseDate = "Ven 30 Juin 2023 - 16:52"
+    assertEquals(false, shouldAppear(creatorName, topicName, infoCompl, lastResponseName, lastResponseDate), "Test 6");
+}
+
+function testConvertDate() {
+    console.info('-- TEST CONVERT DATE --')
+    let date = new Date()
+    date.setHours(14, 15, 0, 0);
+    assertEqualsDate(date, convertDate("Aujourd'hui à 14:15"), "Test 1");
+
+    date = new Date()
+    date.setDate(date.getDate() - 1);
+    date.setHours(0, 59, 0, 0);
+    assertEqualsDate(date, convertDate("Hier à 00:59"), "Test 2");
+
+    date = new Date()
+    date.setDate(8);
+    date.setMonth(3);
+    date.setFullYear(2024);
+    date.setHours(9, 34, 0, 0);
+    assertEqualsDate(date, convertDate("Lun 8 Avr 2024 - 9:34"), "Test 3");
+
+    date = new Date()
+    date.setDate(25);
+    date.setMonth(4);
+    date.setFullYear(2023);
+    date.setHours(18, 15, 0, 0);
+    assertEqualsDate(date, convertDate("Jeu 25 Mai 2023 - 18:15"), "Test 4");
+
+    date = new Date()
+    date.setDate(10);
+    date.setMonth(11);
+    date.setFullYear(date.getFullYear());
+    date.setHours(16, 29, 0, 0);
+    assertEqualsDate(date, convertDate("Mar 10 Déc - 16:29"), "Test 5");
+}
+
+function runTests() {
+    testCreatorName();
+    testTopicName();
+    testLastResponseName();
+    testConvertDate();
+    testDateResponseName();
+}
+runTests();
