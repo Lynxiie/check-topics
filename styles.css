@@ -16,3 +16,7 @@
 .table th:first-child, .table td:first-child {
     max-width: 300px;
 }
+
+.accordion {
+    margin: 15px;
+}

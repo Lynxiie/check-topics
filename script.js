@@ -536,7 +536,7 @@ async function scrapeData(url, placeName) {
             let lastResponseLink = lastResponseTd.querySelector('a').getAttribute('href')
             lastResponseLink = `<a href="${baseUrl}${lastResponseLink}" target="_blank">Dernier message</a>`
 
-            if (!shouldAppear(creatorName, topicName, infoCompl, lastResponseName, lastResponseDate))
+            if (!shouldAppear(creatorName, topicName, infoCompl, lastResponseName, lastResponseDate, creatorColor))
                 return
 
             const creator = `<span style="color:${creatorColor}">${creatorName}</span>`
@@ -862,6 +862,9 @@ function testLastResponseName() {
 
     topicName = "J'ai raté ma mission"
     assertEquals(true, shouldAppear(creatorName, topicName, infoCompl, lastResponseName, lastResponseDate, color), "Test 21");
+
+    lastResponseName = "Miss E"
+    assertEquals(false, shouldAppear(creatorName, topicName, infoCompl, lastResponseName, lastResponseDate, color), "Test 22");
 }
 
 function testDateResponseName() {

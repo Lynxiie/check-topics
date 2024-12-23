@@ -16,6 +16,68 @@
 <body>
     <div class="container">
 
+        <div class="accordion" id="accordion">
+            <div class="accordion-item">
+                <h2 class="accordion-header">
+                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="false" aria-controls="collapseOne">
+                        Critères de filtres
+                    </button>
+                </h2>
+                <div id="collapseOne" class="accordion-collapse collapse" data-bs-parent="#accordion">
+                    <div class="accordion-body">
+                        Sont filtrés les messages dont :
+                        <ul>
+                            <li>Le créateur est "Invité"</li>
+                            <li>Le créateur est "Mister MP", "Mister J", "Mister K", "Mister L", "Miss E", <i>sauf</i> s'il s'agit d'un centre commercial</li>
+                            <li>Le nom du topic contient "(non modéré)", "[non modéré]", "(non modere)", "[non modere]", "[p2b]", "concours de coordination n°"</li>
+                            <li>Le sous-titre contient la liste précédente ou "non modéré", "non modere", "non-modéré", "non-modere"</li>
+                            <li>La dernière réponse a été faite par "Invité"</li>
+                            <li>La dernière réponse a été faite par "Mister J", "Mister K", "Mister L", "Miss E"</li>
+                            <li>La dernière réponse a été faite par "Mister MP" <i>sauf</i> s'il s'agit d'un sujet initié par un scientifique, un sbire, un ranger ou un agent et qu'il y a "mission" dans le titre ou sous-titre</li>
+                            <li>Le dernier message date d'il y a plus d'un mois</li>
+                        </ul>
+
+                        En cas de sujet n'apparaissant pas dans la liste alors qu'il devrait, contacter Luna
+                        (préférence pour un MP que ce soit forum ou Discord, pour être sûre de voir votre message)
+                        pour correction des filtres. Ne pas hésiter à la contacter pour des demandes d'améliorations
+                        ou des idées pour affiner les filtres.
+                    </div>
+                </div>
+            </div>
+            <div class="accordion-item">
+                <h2 class="accordion-header">
+                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
+                        Que faire en cas de ligne rouge ?
+                    </button>
+                </h2>
+                <div id="collapseTwo" class="accordion-collapse collapse" data-bs-parent="#accordion">
+                    <div class="accordion-body">
+                        <b>Si la ligne conserne Ile d'Hisui, Jaderaude, Mont Strueux, Zone Fluviale, Nord de Septentria</b><br>
+                        C'est normal. Les zones ne sont pas accessibles aux invités, il n'est donc pas possible de récupérer les informations de ces endroits.
+                        Ils sont simplement listés pour ne pas les oublier lors des tours de modération.
+                        <br><br>
+                        <b>Autres cas</b>
+                        <ol>
+                            <li>Ouvrir la console du navigateur (F12 par défaut).</li>
+                            <li>Repérer les lignes en rouge</li>
+                            <li>
+                                Si le code d'état est 429 (voir screen), cela signifie qu'on a un peu trop spammer le serveur.
+                                Dans ce cas là, attendre quelques instants (quelques dizaines de secondes ?) avant de changer de région ou
+                                de relancer le scan de la région. Ce n'est pas obligatoire, mais vous pouvez remonter le soucis à Luna.
+                                Si ça arrive trop souvent pendant les tours de modération, elle mettra en place un cooldown entre
+                                deux requêtes pour essayer de limiter l'apparition du problème. <br>
+                                <img src="error_429.png" alt="screen">
+                            </li>
+                            <li>
+                                Dans les autres cas, faire un screen ou un copier-coller des messages d'erreur et les
+                                transmettre à Luna pour analyse et correction.
+                            </li>
+                        </ol>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <div>
             A surveillé qu'il apparait toujours entre le moment où Thomas lance son dé et la modération :
             <a href="https://master-poke.forumactif.fr/t31057-mission-duol-olive-empoisonnee" target="_blank">Mission Honoka et Thomas</a> (Kanto - Cramois'ile)
