@@ -447,11 +447,11 @@ const mtLinks = {
 
 const almiaLinks = {
     "Le Cap de la Terreur": "https://master-poke.forumactif.fr/f37-le-cap-de-la-terreur",
-    // "Ile d'Hisui": "https://master-poke.forumactif.fr/f25-ile-d-hisui",
-    // "Jaderaude": "https://master-poke.forumactif.fr/f591-jaderaude",
-    // "Mont Strueux": "https://master-poke.forumactif.fr/f592-mont-strueux",
-    // "Zone Fluviale": "https://master-poke.forumactif.fr/f593-zone-fluviale",
-    // "Nord de Septentria": "https://master-poke.forumactif.fr/f594-nord-de-septentria",
+    "Ile d'Hisui": "https://master-poke.forumactif.fr/f25-ile-d-hisui",
+    "Jaderaude": "https://master-poke.forumactif.fr/f591-jaderaude",
+    "Mont Strueux": "https://master-poke.forumactif.fr/f592-mont-strueux",
+    "Zone Fluviale": "https://master-poke.forumactif.fr/f593-zone-fluviale",
+    "Nord de Septentria": "https://master-poke.forumactif.fr/f594-nord-de-septentria",
 };
 
 const hqLinks = {
@@ -478,6 +478,12 @@ const noModerationStringInfo = noModerationString.concat([
     "non-modéré",
     "non-modere",
 ]);
+const rankColors = [
+    "rgb(137, 47, 182)", // scientifique
+    "rgb(0, 0, 0)", // sbire
+    "rgb(43, 42, 130)", // agent
+    "rgb(207, 110, 72)", // ranger
+]
 const baseUrl = "https://master-poke.forumactif.fr/"
 
 const kantoBtn = document.getElementById('kantoBtn');
@@ -497,7 +503,12 @@ const hqBtn = document.getElementById('hqBtn');
 async function scrapeData(url, placeName) {
     const data = [];
 
+    const tbody = document.getElementById('table-content')
+    const row = tbody.insertRow();
+    const cell = row.insertCell();
+
     try {
+
         const response = await fetch(url, {
             headers: {
                 "Host": "master-poke.forumactif.fr",
@@ -512,12 +523,14 @@ async function scrapeData(url, placeName) {
             const principalTd = row.querySelector('div.topictitle')
             const topicName = principalTd.querySelector('a.topictitle').innerText
             const creatorName = principalTd.querySelector('span.name span')?.innerText
+            const creatorColor = principalTd.querySelector('span.name span')?.style?.color
 
             let infoCompl = row.querySelector('span.genmed')?.innerText
             infoCompl = infoCompl === undefined ? "" : infoCompl;
 
             const lastResponseTd = row.querySelector('span.list_topics')
             const lastResponseName = lastResponseTd.querySelector('strong')?.innerText
+            const lastResponseColor = lastResponseTd.querySelector('span')?.style?.color
 
             const lastResponseDate = lastResponseTd.firstChild.nodeValue.trim()
             let lastResponseLink = lastResponseTd.querySelector('a').getAttribute('href')
@@ -526,15 +539,15 @@ async function scrapeData(url, placeName) {
             if (!shouldAppear(creatorName, topicName, infoCompl, lastResponseName, lastResponseDate))
                 return
 
-            const newData = [topicName, creatorName, lastResponseName, infoCompl, lastResponseDate, lastResponseLink]
+            const creator = `<span style="color:${creatorColor}">${creatorName}</span>`
+            const response = `<span style="color:${lastResponseColor}">${lastResponseName}</span>`
+
+            const newData = [topicName, creator, response, infoCompl, lastResponseDate, lastResponseLink]
             const newDataNoInfo = [topicName, creatorName, lastResponseName, lastResponseDate, lastResponseLink]
             if (!data.some(list => JSON.stringify(list) === JSON.stringify(newDataNoInfo)))
                 data.push(newData)
         });
 
-        const tbody = document.getElementById('table-content')
-        const row = tbody.insertRow();
-        const cell = row.insertCell();
         cell.colSpan = 6;
         cell.classList.add('place')
         cell.innerHTML = `<a href="${url}" target="_blank">${placeName}</a>`;
@@ -553,6 +566,11 @@ async function scrapeData(url, placeName) {
             });
         }
     } catch (error) {
+        cell.colSpan = 6;
+        cell.classList.add('place')
+        cell.classList.add('table-danger')
+        cell.innerHTML = `<a href="${url}" target="_blank">${placeName}</a> - Une erreur est survenue`;
+
         console.error(error);
     }
 }
@@ -590,7 +608,7 @@ hqBtn.addEventListener('click', function() { changeRegion(hqLinks, hqBtn); });
 
 
 // UTILS
-function shouldAppear(creatorName, topicName, infoCompl, lastResponseName, lastResponseDate) {
+function shouldAppear(creatorName, topicName, infoCompl, lastResponseName, lastResponseDate, color = "rgb(46, 139, 248)") {
     // Test sur le nom du créateur et le nom du topic pour les centres commerciaux
     if (creatorName === undefined || (pnjNames.includes(creatorName) && !topicName.toLowerCase().includes("centre commercial")))
         return false;
@@ -603,8 +621,22 @@ function shouldAppear(creatorName, topicName, infoCompl, lastResponseName, lastR
         return false;
 
     // Test sur la dernière réponse
-    if (pnjNames.includes(lastResponseName) || lastResponseName === undefined)
+    if (lastResponseName === undefined)
         return false;
+
+    if (pnjNames.includes(lastResponseName)) {
+        // Autre PNJ que Mister MP
+        if (lastResponseName !== "Mister MP")
+            return false;
+
+        // Si topic créer par un dresseur, coordinateur ou éthologue
+        if (!rankColors.includes(color))
+            return false;
+
+        // Si le sujet ou sous-titre ne contient pas "mission"
+        if (!topicName.toLowerCase().includes("mission") && !infoCompl.toLowerCase().includes("mission"))
+            return false
+    }
 
     // Test sur la date
     const date = convertDate(lastResponseDate)
@@ -758,10 +790,11 @@ function testTopicName() {
 function testLastResponseName() {
     console.info('-- TEST LAST RESPONSE NAME --')
     const creatorName = "Titi"
-    const topicName = "A l'attaque"
+    let topicName = "A l'attaque"
     const infoCompl= ""
     let lastResponseName = "Titi"
     const lastResponseDate = "Hier à 9:46"
+    let color = "rgb(46, 139, 248)"
 
     assertEquals(true, shouldAppear(creatorName, topicName, infoCompl, lastResponseName, lastResponseDate), "Test 1");
 
@@ -779,6 +812,56 @@ function testLastResponseName() {
 
     lastResponseName = "Miss E"
     assertEquals(false, shouldAppear(creatorName, topicName, infoCompl, lastResponseName, lastResponseDate), "Test 6");
+
+    topicName = "[Mission] A l'attaque"
+    lastResponseName = "Mister MP"
+    assertEquals(false, shouldAppear(creatorName, topicName, infoCompl, lastResponseName, lastResponseDate, color), "Test 7");
+
+    topicName = "(Mission) A l'attaque"
+    assertEquals(false, shouldAppear(creatorName, topicName, infoCompl, lastResponseName, lastResponseDate, color), "Test 8");
+
+    topicName = "J'ai raté ma mission"
+    assertEquals(false, shouldAppear(creatorName, topicName, infoCompl, lastResponseName, lastResponseDate, color), "Test 9");
+
+    topicName = "[Mission] A l'attaque"
+    color = rankColors[0]
+    assertEquals(true, shouldAppear(creatorName, topicName, infoCompl, lastResponseName, lastResponseDate, color), "Test 10");
+
+    topicName = "(Mission) A l'attaque"
+    assertEquals(true, shouldAppear(creatorName, topicName, infoCompl, lastResponseName, lastResponseDate, color), "Test 11");
+
+    topicName = "J'ai raté ma mission"
+    assertEquals(true, shouldAppear(creatorName, topicName, infoCompl, lastResponseName, lastResponseDate, color), "Test 12");
+
+    topicName = "[Mission] A l'attaque"
+    color = rankColors[1]
+    assertEquals(true, shouldAppear(creatorName, topicName, infoCompl, lastResponseName, lastResponseDate, color), "Test 13");
+
+    topicName = "(Mission) A l'attaque"
+    assertEquals(true, shouldAppear(creatorName, topicName, infoCompl, lastResponseName, lastResponseDate, color), "Test 14");
+
+    topicName = "J'ai raté ma mission"
+    assertEquals(true, shouldAppear(creatorName, topicName, infoCompl, lastResponseName, lastResponseDate, color), "Test 15");
+
+    topicName = "[Mission] A l'attaque"
+    color = rankColors[2]
+    assertEquals(true, shouldAppear(creatorName, topicName, infoCompl, lastResponseName, lastResponseDate, color), "Test 16");
+
+    topicName = "(Mission) A l'attaque"
+    assertEquals(true, shouldAppear(creatorName, topicName, infoCompl, lastResponseName, lastResponseDate, color), "Test 17");
+
+    topicName = "J'ai raté ma mission"
+    assertEquals(true, shouldAppear(creatorName, topicName, infoCompl, lastResponseName, lastResponseDate, color), "Test 18");
+
+    topicName = "[Mission] A l'attaque"
+    color = rankColors[3]
+    assertEquals(true, shouldAppear(creatorName, topicName, infoCompl, lastResponseName, lastResponseDate, color), "Test 19");
+
+    topicName = "(Mission) A l'attaque"
+    assertEquals(true, shouldAppear(creatorName, topicName, infoCompl, lastResponseName, lastResponseDate, color), "Test 20");
+
+    topicName = "J'ai raté ma mission"
+    assertEquals(true, shouldAppear(creatorName, topicName, infoCompl, lastResponseName, lastResponseDate, color), "Test 21");
 }
 
 function testDateResponseName() {
