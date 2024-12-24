@@ -499,6 +499,9 @@ const mtBtn = document.getElementById('mtBtn');
 const almiaBtn = document.getElementById('almiaBtn');
 const hqBtn = document.getElementById('hqBtn');
 
+let resizeTimeout;
+const warningTelP = document.getElementById('warningTel');
+
 // PROGRAMME
 async function scrapeData(url, placeName) {
     const data = [];
@@ -605,7 +608,13 @@ paldeaBtn.addEventListener('click', function() { changeRegion(paldeaLinks, palde
 mtBtn.addEventListener('click', function() { changeRegion(mtLinks, mtBtn); });
 almiaBtn.addEventListener('click', function() { changeRegion(almiaLinks, almiaBtn); });
 hqBtn.addEventListener('click', function() { changeRegion(hqLinks, hqBtn); });
+document.addEventListener("DOMContentLoaded", function() { managePhoneWarning(); });
+window.addEventListener('resize', function() {
+    clearTimeout(resizeTimeout);
 
+    resizeTimeout = setTimeout(function() {
+        managePhoneWarning();
+    }, 200); });
 
 // UTILS
 function shouldAppear(creatorName, topicName, infoCompl, lastResponseName, lastResponseDate, color = "rgb(46, 139, 248)") {
@@ -695,7 +704,23 @@ function convertToday(dateStr) {
     return today;
 }
 
-// TESTS
+function isMobleOrSmallWidth() {
+    const userAgent = navigator.userAgent.toLowerCase();
+    const isMobileOrTablet = /(iphone|ipod|android.*mobile|windows.*phone|ipad|android(?!.*mobile))/.test(userAgent);
+    const windowWidth = window.innerWidth;
+
+    return isMobileOrTablet || window.innerWidth <= 768;
+}
+
+function managePhoneWarning() {
+    if (isMobleOrSmallWidth()) {
+        warningTelP.classList.remove('hidden')
+    } else {
+        warningTelP.classList.add('hidden')
+    }
+}
+
+// TESTS UNITAIRES
 function assertEquals(expected, actual, testName) {
     if (expected === actual) {
         console.info(`${testName} réussi !`);
@@ -943,4 +968,5 @@ function runTests() {
     testConvertDate();
     testDateResponseName();
 }
+
 runTests();
