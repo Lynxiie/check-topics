@@ -44,7 +44,23 @@
                             <li>La dernière réponse a été faite par "Invité"</li>
                             <li>La dernière réponse a été faite par "Mister J", "Mister K", "Mister L", "Miss E"</li>
                             <li>La dernière réponse a été faite par "Mister MP" <i>sauf</i> s'il s'agit d'un sujet initié par un scientifique, un sbire, un ranger ou un agent et qu'il y a "mission" dans le titre ou sous-titre</li>
-                            <li>Le dernier message date d'il y a plus d'un mois</li>
+                            <li>
+                                Le dernier message date d'il y a plus d'un mois
+                                <ul>
+                                    <li>
+                                        Parfois, le serveur ne renvoie pas l'année. Dans ces cas là, pour son filtre,
+                                        l'outil considère que l'année est celle en cours.
+                                        Alors, il peut y avoir des sujets qui ressortent mais qui date d'une année précédente,
+                                        mais toujours dans la limite du mois.
+                                        Les autres critères de filtre ne sont pas affectés.<br>
+                                        Exemple si on est en mars 2024:
+                                        <ul>
+                                            <li>Un sujet récupéré sans année de mars 2022 -> sera affiché</li>
+                                            <li>Un sujet récupéré sans année de janvier 2022 -> sera caché</li>
+                                        </ul>
+                                    </li>
+                                </ul>
+                            </li>
                         </ul>
 
                         En cas de sujet n'apparaissant pas dans la liste alors qu'il devrait, contacter Luna

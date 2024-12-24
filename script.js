@@ -709,7 +709,7 @@ function isMobleOrSmallWidth() {
     const isMobileOrTablet = /(iphone|ipod|android.*mobile|windows.*phone|ipad|android(?!.*mobile))/.test(userAgent);
     const windowWidth = window.innerWidth;
 
-    return isMobileOrTablet || window.innerWidth <= 768;
+    return isMobileOrTablet || windowWidth <= 768;
 }
 
 function managePhoneWarning() {
