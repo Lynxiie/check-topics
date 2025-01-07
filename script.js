@@ -651,7 +651,9 @@ function shouldAppear(creatorName, topicName, infoCompl, lastResponseName, lastR
     const date = convertDate(lastResponseDate)
     const dateCompare = new Date();
     dateCompare.setMonth(dateCompare.getMonth() - 1);
-    if (date < dateCompare)
+    // On vire les dates qui ont plus d'un mois et celle dans le futur (cas si on récupère une date sans l'année et
+    // qu'on force l'année à celle en cours)
+    if (date < dateCompare || date > new Date())
         return false;
 
     // Return final
@@ -673,8 +675,11 @@ function convertDate(dateStr) {
     let [hours, minutes] = dateStr.split("-")[1].trim().split(':').slice();
 
     month = moisEnFr.indexOf(month);
-    if (year === '-')
-        year = date.getFullYear();
+    if (year === '-') {
+        // Si on n'a pas l'année, on force celle en cours... Sauf si on est au moins de janvier avec un mois trouvé à
+        // décembre, on fait année - 1
+        year = date.getMonth() === 0 && month === 11 ? date.getFullYear() - 1 : date.getFullYear();
+    }
 
     date.setDate(day);
     date.setMonth(month);
@@ -926,6 +931,29 @@ function testDateResponseName() {
 
     lastResponseDate = "Ven 30 Juin 2023 - 16:52"
     assertEquals(false, shouldAppear(creatorName, topicName, infoCompl, lastResponseName, lastResponseDate), "Test 6");
+
+    date = new Date();
+    if (date.getMonth() === 0 && date.getDate() <= 7) {
+        lastResponseDate = "Ven 01 Jan - 00:01"
+        assertEquals(true, shouldAppear(creatorName, topicName, infoCompl, lastResponseName, lastResponseDate), "Test 7");
+
+        lastResponseDate = "Ven 01 Fév - 00:01"
+        assertEquals(false, shouldAppear(creatorName, topicName, infoCompl, lastResponseName, lastResponseDate), "Test 8");
+
+        lastResponseDate = "Ven 08 Jan - 00:01"
+        assertEquals(false, shouldAppear(creatorName, topicName, infoCompl, lastResponseName, lastResponseDate), "Test 9");
+
+        lastResponseDate = "Ven 10 Déc - 00:01"
+        assertEquals(true, shouldAppear(creatorName, topicName, infoCompl, lastResponseName, lastResponseDate), "Test 10");
+    }
+
+    if (date.getMonth() !== 0 && date.getMonth() !== 11) {
+        lastResponseDate = "Ven 01 Jan - 00:01"
+        assertEquals(false, shouldAppear(creatorName, topicName, infoCompl, lastResponseName, lastResponseDate), "Test 11");
+
+        lastResponseDate = "Ven 10 Déc - 00:01"
+        assertEquals(false, shouldAppear(creatorName, topicName, infoCompl, lastResponseName, lastResponseDate), "Test 12");
+    }
 }
 
 function testConvertDate() {
@@ -953,12 +981,26 @@ function testConvertDate() {
     date.setHours(18, 15, 0, 0);
     assertEqualsDate(date, convertDate("Jeu 25 Mai 2023 - 18:15"), "Test 4");
 
+    const today = new Date()
     date = new Date()
     date.setDate(10);
     date.setMonth(11);
+    date.setHours(16, 29, 0, 0);
+
+    if (today.getMonth() === 0) {
+        date.setFullYear(date.getFullYear() - 1);
+        assertEqualsDate(date, convertDate("Mar 10 Déc - 16:29"), "Test 5.1");
+    } else {
+        date.setFullYear(date.getFullYear());
+        assertEqualsDate(date, convertDate("Mar 10 Déc - 16:29"), "Test 5.2");
+    }
+
+    date = new Date()
+    date.setDate(10);
+    date.setMonth(8);
     date.setFullYear(date.getFullYear());
     date.setHours(16, 29, 0, 0);
-    assertEqualsDate(date, convertDate("Mar 10 Déc - 16:29"), "Test 5");
+    assertEqualsDate(date, convertDate("Mar 10 Sep - 16:29"), "Test 6");
 }
 
 function runTests() {
