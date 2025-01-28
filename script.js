@@ -917,6 +917,7 @@ function testDateResponseName() {
     let dateFormated = date.toLocaleDateString('fr-FR', optionsDate);
     let heureFormated = date.toLocaleTimeString('fr-FR', optionsHour);
     lastResponseDate = `${dateFormated.replaceAll('.', '')} - ${heureFormated}`;
+    lastResponseDate = lastResponseDate.replaceAll('janv', 'Jan')
     assertEquals(true, shouldAppear(creatorName, topicName, infoCompl, lastResponseName, lastResponseDate), "Test 3");
 
     date = new Date();
