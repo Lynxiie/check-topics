@@ -237,7 +237,7 @@ const unysLinks = {
     "Arpentieres": "https://master-poke.forumactif.fr/f390-arpentieres",
     "Mont Renenvers": "https://master-poke.forumactif.fr/f391-mont-renenvers",
     "Institut Myrtille": "https://master-poke.forumactif.fr/f585-institut-myrtille",
-    "Biome Savanne": "https://master-poke.forumactif.fr/f586-biome-savanne",
+    "Biome Savane": "https://master-poke.forumactif.fr/f586-biome-savane",
     "Biome Canyon": "https://master-poke.forumactif.fr/f587-biome-canyon",
     "Biome Cotier": "https://master-poke.forumactif.fr/f588-biome-cotier",
     "Biome Polaire": "https://master-poke.forumactif.fr/f589-biome-polaire"
@@ -903,7 +903,7 @@ function testDateResponseName() {
     const topicName = "A l'attaque"
     const infoCompl= ""
     const lastResponseName = "Titi"
-    let lastResponseDate = "Aujourd'hui à 9:46"
+    let lastResponseDate = "Aujourd'hui à 00:01"
 
     assertEquals(true, shouldAppear(creatorName, topicName, infoCompl, lastResponseName, lastResponseDate), "Test 1");
 
@@ -925,6 +925,7 @@ function testDateResponseName() {
     dateFormated = date.toLocaleDateString('fr-FR', optionsDate);
     heureFormated = date.toLocaleTimeString('fr-FR', optionsHour);
     lastResponseDate = `${dateFormated.replaceAll('.', '')} - ${heureFormated}`;
+    lastResponseDate = lastResponseDate.replaceAll('janv', 'Jan')
     assertEquals(true, shouldAppear(creatorName, topicName, infoCompl, lastResponseName, lastResponseDate), "Test 4");
 
     lastResponseDate = "Ven 1 Nov 2024 - 16:52"
