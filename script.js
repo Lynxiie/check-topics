@@ -648,12 +648,13 @@ function shouldAppear(creatorName, topicName, infoCompl, lastResponseName, lastR
     }
 
     // Test sur la date
-    const date = convertDate(lastResponseDate)
-    const dateCompare = new Date();
-    dateCompare.setMonth(dateCompare.getMonth() - 1);
+    const lastResponse = convertDate(lastResponseDate)
+    const dateMax = new Date();
+    dateMax.setMonth(dateMax.getMonth() - 1);
+
     // On vire les dates qui ont plus d'un mois et celle dans le futur (cas si on récupère une date sans l'année et
     // qu'on force l'année à celle en cours)
-    if (date < dateCompare || date > new Date())
+    if (lastResponse < dateMax || lastResponse > new Date())
         return false;
 
     // Return final
@@ -681,9 +682,9 @@ function convertDate(dateStr) {
         year = date.getMonth() === 0 && month === 11 ? date.getFullYear() - 1 : date.getFullYear();
     }
 
-    date.setDate(day);
-    date.setMonth(month);
     date.setFullYear(year);
+    date.setMonth(month);
+    date.setDate(day);
     date.setHours(Number(hours), Number(minutes), 0, 0);
 
     return date;
