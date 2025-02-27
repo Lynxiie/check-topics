@@ -726,6 +726,23 @@ function managePhoneWarning() {
     }
 }
 
+function replaceMonthForForumMonth(date) {
+    date = date.replaceAll('janv', 'Jan');
+    date = date.replaceAll('févr', 'Fév');
+    date = date.replaceAll('mars', 'Mar');
+    date = date.replaceAll('avril', 'Avr');
+    date = date.replaceAll('mai', 'Mai');
+    date = date.replaceAll('juin', 'Juin');
+    date = date.replaceAll('juil', 'Juil');
+    date = date.replaceAll('août', 'Aoû');
+    date = date.replaceAll('sept', 'Sep');
+    date = date.replaceAll('oct', 'Oct');
+    date = date.replaceAll('nov', 'Nov');
+    date = date.replaceAll('déc', 'Déc');
+
+    return date;
+}
+
 // TESTS UNITAIRES
 function assertEquals(expected, actual, testName) {
     if (expected === actual) {
@@ -905,7 +922,6 @@ function testDateResponseName() {
     const infoCompl= ""
     const lastResponseName = "Titi"
     let lastResponseDate = "Aujourd'hui à 00:01"
-
     assertEquals(true, shouldAppear(creatorName, topicName, infoCompl, lastResponseName, lastResponseDate), "Test 1");
 
     lastResponseDate = "Hier à 00:15"
@@ -918,7 +934,7 @@ function testDateResponseName() {
     let dateFormated = date.toLocaleDateString('fr-FR', optionsDate);
     let heureFormated = date.toLocaleTimeString('fr-FR', optionsHour);
     lastResponseDate = `${dateFormated.replaceAll('.', '')} - ${heureFormated}`;
-    lastResponseDate = lastResponseDate.replaceAll('janv', 'Jan')
+    lastResponseDate = replaceMonthForForumMonth(lastResponseDate)
     assertEquals(true, shouldAppear(creatorName, topicName, infoCompl, lastResponseName, lastResponseDate), "Test 3");
 
     date = new Date();
@@ -926,7 +942,7 @@ function testDateResponseName() {
     dateFormated = date.toLocaleDateString('fr-FR', optionsDate);
     heureFormated = date.toLocaleTimeString('fr-FR', optionsHour);
     lastResponseDate = `${dateFormated.replaceAll('.', '')} - ${heureFormated}`;
-    lastResponseDate = lastResponseDate.replaceAll('janv', 'Jan')
+    lastResponseDate = replaceMonthForForumMonth(lastResponseDate)
     assertEquals(true, shouldAppear(creatorName, topicName, infoCompl, lastResponseName, lastResponseDate), "Test 4");
 
     lastResponseDate = "Ven 1 Nov 2024 - 16:52"
