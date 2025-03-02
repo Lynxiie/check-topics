@@ -650,7 +650,7 @@ function shouldAppear(creatorName, topicName, infoCompl, lastResponseName, lastR
     // Test sur la date
     const lastResponse = convertDate(lastResponseDate)
     const dateMax = new Date();
-    dateMax.setMonth(dateMax.getMonth() - 1);
+    dateMax.setDate(dateMax.getDate() - 31);
 
     // On vire les dates qui ont plus d'un mois et celle dans le futur (cas si on récupère une date sans l'année et
     // qu'on force l'année à celle en cours)
