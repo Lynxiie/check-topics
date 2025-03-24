@@ -649,12 +649,18 @@ function shouldAppear(creatorName, topicName, infoCompl, lastResponseName, lastR
 
     // Test sur la date
     const lastResponse = convertDate(lastResponseDate)
-    const dateMax = new Date();
-    dateMax.setDate(dateMax.getDate() - 31);
 
-    // On vire les dates qui ont plus d'un mois et celle dans le futur (cas si on récupère une date sans l'année et
-    // qu'on force l'année à celle en cours)
-    if (lastResponse < dateMax || lastResponse > new Date())
+    // Calcul de la date minimum -> 31 jours en arrière
+    const minusDate = new Date();
+    minusDate.setDate(minusDate.getDate() - 31);
+
+    // Calcul de la date maximum (cas si on récupère une date sans l'année et qu'on force l'année à celle en cours)
+    // On fait +1 jour pour les problèmes de fuseaux horaires
+    const plusDate = new Date();
+    plusDate.setDate(plusDate.getDate() + 1)
+
+    // On vire les dates qui ne sont pas entre le date min et max
+    if (lastResponse < minusDate || lastResponse > plusDate)
         return false;
 
     // Return final
