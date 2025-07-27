@@ -679,7 +679,20 @@ function convertDate(dateStr) {
     const moisEnFr = ["Jan", "Fév", "Mar", "Avr", "Mai", "Juin", "Juil", "Aoû", "Sep", "Oct", "Nov", "Déc"];
     const date = new Date();
     let [day, month, year] = dateStr.split(" ").slice(1);
-    let [hours, minutes] = dateStr.split("-")[1].trim().split(':').slice();
+    if (year.includes(",")) {
+        year = year.replace(",", "")
+    }
+
+    let hours, minutes, timePart;
+    if (dateStr.includes("-")) {
+        timePart = dateStr.split("-")[1]?.trim();
+    } else if (dateStr.includes(",")) {
+        timePart = dateStr.split(",")[1]?.trim();
+    } else {
+        console.error(`Format date inconnu : ${dateStr}`)
+    }
+    [hours, minutes] = timePart.split(':').map(part => part.trim());
+
 
     month = moisEnFr.indexOf(month);
     if (year === '-') {
@@ -956,6 +969,9 @@ function testDateResponseName() {
 
     lastResponseDate = "Ven 30 Juin 2023 - 16:52"
     assertEquals(false, shouldAppear(creatorName, topicName, infoCompl, lastResponseName, lastResponseDate), "Test 6");
+
+    lastResponseDate = "Mer 11 Sep 2019, 19:29"
+    assertEquals(false, shouldAppear(creatorName, topicName, infoCompl, lastResponseName, lastResponseDate), "Test 13");
 
     date = new Date();
     if (date.getMonth() === 0 && date.getDate() <= 7) {
