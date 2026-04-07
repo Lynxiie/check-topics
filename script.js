@@ -384,7 +384,7 @@ const galarLinks = {
     "Route 09": "https://master-poke.forumactif.fr/f393-route-09",
     "Smashings": "https://master-poke.forumactif.fr/f236-smashings",
     "Chenal de Smashings": "https://master-poke.forumactif.fr/f397-chenal-de-smashings",
-    "Isolamure": "https://master-poke.forumactif.fr/f409-isolamure",
+    "Isolarmure": "https://master-poke.forumactif.fr/f409-isolarmure",
     "Zone Sud": "https://master-poke.forumactif.fr/f453-zone-sud",
     "Zone Centrale": "https://master-poke.forumactif.fr/f462-zone-centrale",
     "Zone Nord": "https://master-poke.forumactif.fr/f463-zone-nord",
