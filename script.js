@@ -525,14 +525,14 @@ async function scrapeData(url, placeName) {
         rows.forEach(function(row) {
             const principalTd = row.querySelector('div.topictitle')
             const topicName = principalTd.querySelector('a.topictitle').innerText
-            const creatorName = principalTd.querySelector('span.name span')?.innerText
+            const creatorName = principalTd.querySelector('span.name span')?.innerText.trim()
             const creatorColor = principalTd.querySelector('span.name span')?.style?.color
 
             let infoCompl = row.querySelector('span.genmed')?.innerText
             infoCompl = infoCompl === undefined ? "" : infoCompl;
 
             const lastResponseTd = row.querySelector('span.list_topics')
-            const lastResponseName = lastResponseTd.querySelector('strong')?.innerText
+            const lastResponseName = lastResponseTd.querySelector('strong')?.innerText.trim()
             const lastResponseColor = lastResponseTd.querySelector('span')?.style?.color
 
             const lastResponseDate = lastResponseTd.firstChild.nodeValue.trim()
@@ -676,7 +676,7 @@ function convertDate(dateStr) {
         return convertToday(dateStr);
     }
 
-    const moisEnFr = ["Jan", "Fév", "Mar", "Avr", "Mai", "Juin", "Juil", "Aoû", "Sep", "Oct", "Nov", "Déc"];
+    const moisEnFr = ["jan", "fév", "mar", "avr", "mai", "juin", "juil", "aoû", "sep", "oct", "nov", "déc"];
     const date = new Date();
     let [day, month, year] = dateStr.split(" ").slice(1);
     if (year.includes(",")) {
@@ -694,7 +694,7 @@ function convertDate(dateStr) {
     [hours, minutes] = timePart.split(':').map(part => part.trim());
 
 
-    month = moisEnFr.indexOf(month);
+    month = moisEnFr.indexOf(month.toLowerCase());
     if (year === '-') {
         // Si on n'a pas l'année, on force celle en cours... Sauf si on est au moins de janvier avec un mois trouvé à
         // décembre, on fait année - 1
